@@ -1,14 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  Button,
-  TextInput,
-  Form,
-} from "react-native";
+import { StyleSheet, Text, View, Image, Button } from "react-native";
 // import Chat from "./components/Chat";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";

@@ -11,6 +11,7 @@
     "@absinthe/socket": "^0.2.1",
     "@absinthe/socket-apollo-link": "^0.2.1",
     "@apollo/client": "^3.3.12",
+    "@jumpn/utils-graphql": "^0.6.0",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/native": "^5.9.3",
     "@react-navigation/stack": "^5.14.3",
