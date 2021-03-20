@@ -15,6 +15,11 @@ import {
   useQuery,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import * as AbsintheSocket from "@absinthe/socket";
+import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
+import { Socket as PhoenixSocket } from "phoenix";
+import { hasSubscription } from "@jumpn/utils-graphql";
+import { split } from "apollo-link";
 
 const token =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ";
@@ -32,9 +37,35 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const authedHttpLink = authLink.concat(httpLink);
+
+const phoenixSocket = new PhoenixSocket(
+  "wss://chat.thewidlarzgroup.com/socket",
+  {
+    params: () => {
+      return {
+        token:
+          "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ",
+      };
+    },
+  }
+);
+
+const absintheSocket = AbsintheSocket.create(phoenixSocket);
+
+const websocketLink = createAbsintheSocketLink(absintheSocket);
+
+const link = split(
+  (operation) => hasSubscription(operation.query),
+  websocketLink,
+  authedHttpLink
+);
+
+const cache = new InMemoryCache();
+
 const client = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+  link,
+  cache,
 });
 
 interface Room {
@@ -217,7 +248,7 @@ const styles = StyleSheet.create({
   roomPic: {
     width: 50,
     height: 50,
-    borderRadius: "50%",
+    borderRadius: 25,
   },
   input: {
     height: 40,
