@@ -1,6 +1,14 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { StyleSheet, Text, View, Image, Button, TextInput } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Button,
+  TextInput,
+  Form,
+} from "react-native";
 // import Chat from "./components/Chat";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
@@ -13,6 +21,7 @@ import {
   createHttpLink,
   gql,
   useQuery,
+  useMutation,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import * as AbsintheSocket from "@absinthe/socket";
@@ -127,8 +136,65 @@ const GET_MESSAGES = gql`
   }
 `;
 
+const POST_MESSAGE = gql`
+  mutation PostMessage($messageBody: String!) {
+    loginUser(email: "penny@mail.com", password: "aSGH11ghJKl123!") {
+      token
+      user {
+        email
+        firstName
+        id
+        lastName
+        profilePic
+        role
+      }
+    }
+    sendMessage(
+      body: $messageBody
+      roomId: "33290044-5232-46be-9302-210f5291905b"
+    ) {
+      body
+      id
+      insertedAt
+      user {
+        email
+        firstName
+        id
+        lastName
+        profilePic
+        role
+      }
+    }
+  }
+`;
+
 ///
 let roomIDS = [];
+
+function PostMessage() {
+  let input;
+  const [postMessage, { data }] = useMutation(POST_MESSAGE);
+  return (
+    <View>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          postMessage({ variables: { messageBody: input.value } });
+          input.value = "";
+        }}
+      >
+        <input
+          ref={(node) => {
+            input = node;
+          }}
+        />
+        <button type="submit">
+          <Text>Send</Text>
+        </button>
+      </form>
+    </View>
+  );
+}
 
 function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_ROOMS);
@@ -187,7 +253,7 @@ function RoomScreen(route) {
           </Text>
         </View>
       ))}
-      <TextInput style={styles.input} />
+      <PostMessage />
     </View>
   );
 }
