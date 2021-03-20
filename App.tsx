@@ -1,6 +1,14 @@
 import { StatusBar } from "expo-status-bar";
-import React from "react";
-import { StyleSheet, Text, View, Image, Button } from "react-native";
+import React, { useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Button,
+  TextInput,
+  Form,
+} from "react-native";
 // import Chat from "./components/Chat";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
@@ -13,8 +21,14 @@ import {
   createHttpLink,
   gql,
   useQuery,
+  useMutation,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import * as AbsintheSocket from "@absinthe/socket";
+import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
+import { Socket as PhoenixSocket } from "phoenix";
+import { hasSubscription } from "@jumpn/utils-graphql";
+import { split } from "apollo-link";
 
 const token =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ";
@@ -32,9 +46,35 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const authedHttpLink = authLink.concat(httpLink);
+
+const phoenixSocket = new PhoenixSocket(
+  "wss://chat.thewidlarzgroup.com/socket",
+  {
+    params: () => {
+      return {
+        token:
+          "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ",
+      };
+    },
+  }
+);
+
+const absintheSocket = AbsintheSocket.create(phoenixSocket);
+
+const websocketLink = createAbsintheSocketLink(absintheSocket);
+
+const link = split(
+  (operation) => hasSubscription(operation.query),
+  websocketLink,
+  authedHttpLink
+);
+
+const cache = new InMemoryCache();
+
 const client = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+  link,
+  cache,
 });
 
 interface Room {
@@ -63,8 +103,10 @@ const GET_ROOMS = gql`
   }
 `;
 
+// room(id: "33290044-5232-46be-9302-210f5291905b")
+
 const GET_MESSAGES = gql`
-  query Room($roomID: String!) {
+  query GetMessages($roomID: String!) {
     room(id: $roomID) {
       id
       messages {
@@ -94,49 +136,158 @@ const GET_MESSAGES = gql`
   }
 `;
 
+const POST_MESSAGE = gql`
+  mutation PostMessage($messageBody: String!) {
+    loginUser(email: "penny@mail.com", password: "aSGH11ghJKl123!") {
+      token
+      user {
+        email
+        firstName
+        id
+        lastName
+        profilePic
+        role
+      }
+    }
+    sendMessage(
+      body: $messageBody
+      roomId: "33290044-5232-46be-9302-210f5291905b"
+    ) {
+      body
+      id
+      insertedAt
+      user {
+        email
+        firstName
+        id
+        lastName
+        profilePic
+        role
+      }
+    }
+  }
+`;
+
 ///
+let roomIDS = [];
+
+function PostMessage() {
+  let input;
+  const [postMessage, { data }] = useMutation(POST_MESSAGE);
+  return (
+    <View>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          postMessage({ variables: { messageBody: input.value } });
+          input.value = "";
+        }}
+      >
+        <input
+          ref={(node) => {
+            input = node;
+          }}
+        />
+        <button type="submit">
+          <Text>Send</Text>
+        </button>
+      </form>
+    </View>
+  );
+}
 
 function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_ROOMS);
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
-  return data.usersRooms.rooms.map((room: Room) => (
+  roomIDS = data.usersRooms.rooms.map((room: Room) => {
+    return room.id;
+  });
+  console.log(roomIDS);
+  return data.usersRooms.rooms.map((room: Room, index) => (
     <View key={room.id}>
-      <Image style={styles.roomPic} source={{ uri: room.roomPic }} />
+      <Image
+        style={styles.roomPic}
+        source={{
+          uri:
+            room.roomPic !== ""
+              ? room.roomPic
+              : "https://lh3.googleusercontent.com/proxy/eLBl-oqqyz7uPHWUOGLBY_ZxXCcOjru-ggO5QfNq3DZeIOUXYYwuj0YZoMhStr-gft55iMF6kfDmfG6l7fXzyxdBl6QzFoN5Wgd0RdU",
+        }}
+      />
       <Text>{room.name}</Text>
       <Button
         title="Go to room"
-        onPress={() =>
-          navigation.navigate("Room", {
-            roomID: "33290044-5232-46be-9302-210f5291905b",
-          })
-        }
+        onPress={() => {
+          navigation.navigate("Room", { roomID: room.id });
+        }}
       />
     </View>
   ));
 }
 
 function RoomScreen(route) {
-  const roomID = route.params;
+  // const { roomID } = route.params;
+  const roomID = "33290044-5232-46be-9302-210f5291905b";
   const { data, loading, error } = useQuery(GET_MESSAGES, {
-    variables: roomID,
+    variables: { roomID: roomID },
   });
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
 
-  return data.room.messages.map((message) => (
-    <View key={message.id}>
-      <Image style={styles.roomPic} source={{ uri: message.user.profilePic }} />
-      <Text>
-        {message.user.firstName}: {message.body}
-      </Text>
+  return (
+    <View>
+      {data.room.messages.map((message) => (
+        <View key={message.id}>
+          <Image
+            style={styles.roomPic}
+            source={{
+              uri:
+                message.user.profilePic !== ""
+                  ? message.user.profilePic
+                  : "https://www.uclg-planning.org/sites/default/files/styles/featured_home_left/public/no-user-image-square.jpg?itok=PANMBJF-",
+            }}
+          />
+          <Text>
+            {message.user.firstName}: {message.body}
+          </Text>
+        </View>
+      ))}
+      <PostMessage />
     </View>
-  ));
+  );
 }
 
 const Stack = createStackNavigator();
 
 export default function App() {
+  // let roomIDs = [];
+
+  // function getRoomsID() {
+  //   const data = client.readFragment({
+  //     rooms
+  //     fragment: gql`
+  //       {
+  //         usersRooms {
+  //           rooms {
+  //             id
+  //             name
+  //             roomPic
+  //           }
+  //         }
+  //       }
+  //     `,
+  //   });
+  //   roomIDs = data.usersRooms.rooms.map((room: Room) => {
+  //     return room.id;
+  //   });
+  // }
+
+  // useEffect(() => {
+  //   getRoomsID();
+  //   console.log(roomIDs);
+  // }, []);
+
   return (
     <ApolloProvider client={client}>
       <NavigationContainer>
@@ -163,5 +314,11 @@ const styles = StyleSheet.create({
   roomPic: {
     width: 50,
     height: 50,
+    borderRadius: 25,
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
   },
 });
