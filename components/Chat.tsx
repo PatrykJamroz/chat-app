@@ -57,6 +57,37 @@ const GET_ROOMS = gql`
   }
 `;
 
+const GET_MESSAGES = gql`
+  {
+    room(id: "33290044-5232-46be-9302-210f5291905b") {
+      id
+      messages {
+        body
+        id
+        insertedAt
+        user {
+          email
+          firstName
+          id
+          lastName
+          profilePic
+          role
+        }
+      }
+      name
+      roomPic
+      user {
+        email
+        firstName
+        id
+        lastName
+        profilePic
+        role
+      }
+    }
+  }
+`;
+
 const Room = ({}) => {
   const { data, loading, error } = useQuery(GET_ROOMS);
   if (loading) return <Text>Loading...</Text>;
@@ -65,8 +96,21 @@ const Room = ({}) => {
   return data.usersRooms.rooms.map((room: Room) => (
     <View key={room.id}>
       <Image style={styles.roomPic} source={{ uri: room.roomPic }} />
+      <Text>{room.name}</Text>
+    </View>
+  ));
+};
+
+const Message = () => {
+  const { data, loading, error } = useQuery(GET_MESSAGES);
+  if (loading) return <Text>Loading...</Text>;
+  if (error) return <Text>Error :(</Text>;
+
+  return data.room.messages.map((message) => (
+    <View key={message.id}>
+      <Image style={styles.roomPic} source={{ uri: message.user.profilePic }} />
       <Text>
-        {room.id}: {room.name}
+        {message.user.firstName}: {message.body}
       </Text>
     </View>
   ));
