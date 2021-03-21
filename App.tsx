@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, Button } from "react-native";
 // import Chat from "./components/Chat";
 import "react-native-gesture-handler";
@@ -21,6 +21,8 @@ import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
 import { Socket as PhoenixSocket } from "phoenix";
 import { hasSubscription } from "@jumpn/utils-graphql";
 import { split } from "apollo-link";
+import { TextInput } from "react-native-gesture-handler";
+import { Formik } from "formik";
 
 const token =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ";
@@ -160,12 +162,50 @@ const POST_MESSAGE = gql`
   }
 `;
 
+const MESSAGE_SUBSCRIPTION = gql`
+  subscription {
+    messageAdded(roomId: "33290044-5232-46be-9302-210f5291905b") {
+      body
+      id
+      insertedAt
+      user {
+        email
+        firstName
+        id
+        lastName
+        profilePic
+        role
+      }
+    }
+  }
+`;
+
 ///
 let roomIDS = [];
 
 function PostMessage() {
   let input;
   const [postMessage, { data }] = useMutation(POST_MESSAGE);
+
+  //   <Formik
+  //   initialValues={{ message: "" }}
+  //   onSubmit={(values) => {
+  //     postMessage({ variables: { messageBody: values } })
+  //   }
+  //   }
+  // >
+  //   {({ handleChange, handleBlur, handleSubmit, values }) => (
+  //     <View>
+  //       <TextInput
+  //         onChangeText={handleChange("message")}
+  //         onBlur={handleBlur("message")}
+  //         value={values.message}
+  //       />
+  //       <Button onPress={handleSubmit} title="Submit" />
+  //     </View>
+  //   )}
+  // </Formik>
+
   return (
     <View>
       <form
@@ -195,7 +235,7 @@ function HomeScreen({ navigation }) {
   roomIDS = data.usersRooms.rooms.map((room: Room) => {
     return room.id;
   });
-  console.log(roomIDS);
+
   return data.usersRooms.rooms.map((room: Room, index) => (
     <View key={room.id}>
       <Image
@@ -231,18 +271,36 @@ function RoomScreen(route) {
     <View>
       {data.room.messages.map((message) => (
         <View key={message.id}>
-          <Image
-            style={styles.roomPic}
-            source={{
-              uri:
-                message.user.profilePic !== ""
-                  ? message.user.profilePic
-                  : "https://www.uclg-planning.org/sites/default/files/styles/featured_home_left/public/no-user-image-square.jpg?itok=PANMBJF-",
-            }}
-          />
-          <Text>
-            {message.user.firstName}: {message.body}
-          </Text>
+          <View
+            style={
+              message.user.firstName === "Penny"
+                ? styles.myMessage
+                : styles.themMessage
+            }
+          >
+            <Image
+              style={
+                message.user.firstName === "Penny"
+                  ? styles.roomPicMy
+                  : styles.roomPicThem
+              }
+              source={{
+                uri:
+                  message.user.profilePic !== ""
+                    ? message.user.profilePic
+                    : "https://www.uclg-planning.org/sites/default/files/styles/featured_home_left/public/no-user-image-square.jpg?itok=PANMBJF-",
+              }}
+            />
+            <Text
+              style={
+                message.user.firstName === "Penny"
+                  ? styles.myBubble
+                  : styles.themBubble
+              }
+            >
+              {message.body}
+            </Text>
+          </View>
         </View>
       ))}
       <PostMessage />
@@ -253,33 +311,6 @@ function RoomScreen(route) {
 const Stack = createStackNavigator();
 
 export default function App() {
-  // let roomIDs = [];
-
-  // function getRoomsID() {
-  //   const data = client.readFragment({
-  //     rooms
-  //     fragment: gql`
-  //       {
-  //         usersRooms {
-  //           rooms {
-  //             id
-  //             name
-  //             roomPic
-  //           }
-  //         }
-  //       }
-  //     `,
-  //   });
-  //   roomIDs = data.usersRooms.rooms.map((room: Room) => {
-  //     return room.id;
-  //   });
-  // }
-
-  // useEffect(() => {
-  //   getRoomsID();
-  //   console.log(roomIDs);
-  // }, []);
-
   return (
     <ApolloProvider client={client}>
       <NavigationContainer>
@@ -308,9 +339,43 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
   },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
+  roomPicMy: {
+    display: "none",
+  },
+  roomPicThem: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 5,
+  },
+  input: {},
+  myBubble: {
+    backgroundColor: "gray",
+    padding: "0.5em",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  themBubble: {
+    backgroundColor: "lightgray",
+
+    padding: "0.5em",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  themMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: "5px",
+    marginLeft: "1em",
+  },
+  myMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    marginTop: "5px",
+    marginRight: "1em",
   },
 });
