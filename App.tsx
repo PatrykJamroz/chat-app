@@ -206,21 +206,48 @@ function PostMessage() {
   //   )}
   // </Formik>
 
+  //   <View>
+  //   <form
+  //     onSubmit={(e) => {
+  //       e.preventDefault();
+  //       postMessage({ variables: { messageBody: input.value } });
+  //       input.value = "";
+  //     }}
+  //   >
+  //     <input
+  //       ref={(node) => {
+  //         input = node;
+  //       }}
+  //     />
+  //     <button type="submit">
+  //       <Text>Send</Text>
+  //     </button>
+  //   </form>
+  // </View>
+
   return (
-    <View>
+    <View
+      style={{
+        width: "100%",
+        alignItems: "center",
+        marginTop: "1em",
+      }}
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
           postMessage({ variables: { messageBody: input.value } });
           input.value = "";
         }}
+        style={{ alignItems: "center" }}
       >
         <input
           ref={(node) => {
             input = node;
           }}
+          style={{ width: 500, height: 30 }}
         />
-        <button type="submit">
+        <button type="submit" style={{ height: 36 }}>
           <Text>Send</Text>
         </button>
       </form>
@@ -237,23 +264,27 @@ function HomeScreen({ navigation }) {
   });
 
   return data.usersRooms.rooms.map((room: Room, index) => (
-    <View key={room.id}>
-      <Image
-        style={styles.roomPic}
-        source={{
-          uri:
-            room.roomPic !== ""
-              ? room.roomPic
-              : "https://lh3.googleusercontent.com/proxy/eLBl-oqqyz7uPHWUOGLBY_ZxXCcOjru-ggO5QfNq3DZeIOUXYYwuj0YZoMhStr-gft55iMF6kfDmfG6l7fXzyxdBl6QzFoN5Wgd0RdU",
-        }}
-      />
-      <Text>{room.name}</Text>
-      <Button
-        title="Go to room"
-        onPress={() => {
-          navigation.navigate("Room", { roomID: room.id });
-        }}
-      />
+    <View style={{ width: 500, marginLeft: "auto", marginRight: "auto" }}>
+      <View key={room.id} style={styles.roomListItem}>
+        <Image
+          style={styles.roomPic}
+          source={{
+            uri:
+              room.roomPic !== ""
+                ? room.roomPic
+                : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/600px-No_image_available.svg.png",
+          }}
+        />
+        <View>
+          <Text>{room.name}</Text>
+          <Button
+            title="Go to room"
+            onPress={() => {
+              navigation.navigate("Room", { roomID: room.id });
+            }}
+          />
+        </View>
+      </View>
     </View>
   ));
 }
@@ -268,7 +299,7 @@ function RoomScreen(route) {
   if (error) return <Text>Error :(</Text>;
 
   return (
-    <View>
+    <View style={{ width: 700, marginLeft: "auto", marginRight: "auto" }}>
       {data.room.messages.map((message) => (
         <View key={message.id}>
           <View
@@ -288,7 +319,7 @@ function RoomScreen(route) {
                 uri:
                   message.user.profilePic !== ""
                     ? message.user.profilePic
-                    : "https://www.uclg-planning.org/sites/default/files/styles/featured_home_left/public/no-user-image-square.jpg?itok=PANMBJF-",
+                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/600px-No_image_available.svg.png",
               }}
             />
             <Text
@@ -338,6 +369,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginRight: "1em",
   },
   roomPicMy: {
     display: "none",
@@ -377,5 +409,13 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     marginTop: "5px",
     marginRight: "1em",
+  },
+  roomListItem: {
+    marginTop: "1em",
+    padding: "0.5em",
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "lightgray",
+    justifyContent: "center",
   },
 });
