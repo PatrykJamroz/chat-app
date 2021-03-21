@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View, Image, Button } from "react-native";
 // import Chat from "./components/Chat";
 import "react-native-gesture-handler";
@@ -22,7 +22,6 @@ import { Socket as PhoenixSocket } from "phoenix";
 import { hasSubscription } from "@jumpn/utils-graphql";
 import { split } from "apollo-link";
 import { TextInput } from "react-native-gesture-handler";
-import { Formik } from "formik";
 
 const token =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ";
@@ -186,25 +185,7 @@ let roomIDS = [];
 function PostMessage() {
   let input;
   const [postMessage, { data }] = useMutation(POST_MESSAGE);
-
-  //   <Formik
-  //   initialValues={{ message: "" }}
-  //   onSubmit={(values) => {
-  //     postMessage({ variables: { messageBody: values } })
-  //   }
-  //   }
-  // >
-  //   {({ handleChange, handleBlur, handleSubmit, values }) => (
-  //     <View>
-  //       <TextInput
-  //         onChangeText={handleChange("message")}
-  //         onBlur={handleBlur("message")}
-  //         value={values.message}
-  //       />
-  //       <Button onPress={handleSubmit} title="Submit" />
-  //     </View>
-  //   )}
-  // </Formik>
+  const [messageText, setMessageText] = useState("");
 
   //   <View>
   //   <form
@@ -225,32 +206,39 @@ function PostMessage() {
   //   </form>
   // </View>
 
+  const textInput = useRef(null);
+
   return (
     <View
       style={{
         width: "100%",
         alignItems: "center",
-        marginTop: "1em",
+        marginTop: 10,
+        flexDirection: "row",
+        justifyContent: "center",
       }}
     >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          postMessage({ variables: { messageBody: input.value } });
-          input.value = "";
+      <TextInput
+        onChangeText={(value) => setMessageText(value)}
+        style={{
+          backgroundColor: "white",
+          height: 34,
+          width: 500,
         }}
-        style={{ alignItems: "center" }}
-      >
-        <input
-          ref={(node) => {
-            input = node;
-          }}
-          style={{ width: 500, height: 30 }}
-        />
-        <button type="submit" style={{ height: 36 }}>
-          <Text>Send</Text>
-        </button>
-      </form>
+        placeholder="Aa"
+        autoFocus
+        ref={textInput}
+      />
+      <Button
+        title="Send"
+        onPress={() => {
+          postMessage({ variables: { messageBody: messageText } });
+          textInput.current.clear();
+          console.log(messageText);
+          setMessageText("");
+          console.log(messageText);
+        }}
+      />
     </View>
   );
 }
@@ -263,9 +251,12 @@ function HomeScreen({ navigation }) {
     return room.id;
   });
 
-  return data.usersRooms.rooms.map((room: Room, index) => (
-    <View style={{ width: 500, marginLeft: "auto", marginRight: "auto" }}>
-      <View key={room.id} style={styles.roomListItem}>
+  return data.usersRooms.rooms.map((room: Room) => (
+    <View
+      style={{ width: 500, marginLeft: "auto", marginRight: "auto" }}
+      key={room.id}
+    >
+      <View style={styles.roomListItem}>
         <Image
           style={styles.roomPic}
           source={{
@@ -281,6 +272,7 @@ function HomeScreen({ navigation }) {
             title="Go to room"
             onPress={() => {
               navigation.navigate("Room", { roomID: room.id });
+              console.log("clicked room id: " + room.id);
             }}
           />
         </View>
@@ -289,17 +281,23 @@ function HomeScreen({ navigation }) {
   ));
 }
 
-function RoomScreen(route) {
-  // const { roomID } = route.params;
-  const roomID = "33290044-5232-46be-9302-210f5291905b";
+//a407ac84-d7df-4b25-804b-00ff1d10acc2
+//10aa0124-d863-413f-9845-dc439d327720
+//33290044-5232-46be-9302-210f5291905b
+
+function RoomScreen(route, navigation, rooomID) {
+  //const { roomID } = route.params; // Cannot read property 'roomID' of undefined
+  const roomID = "33290044-5232-46be-9302-210f5291905b"; //hardcoded value
   const { data, loading, error } = useQuery(GET_MESSAGES, {
     variables: { roomID: roomID },
   });
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
 
+  //style={{ width: 700, marginLeft: "auto", marginRight: "auto" }}
+
   return (
-    <View style={{ width: 700, marginLeft: "auto", marginRight: "auto" }}>
+    <View>
       {data.room.messages.map((message) => (
         <View key={message.id}>
           <View
@@ -369,7 +367,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: "1em",
+    marginRight: 10,
   },
   roomPicMy: {
     display: "none",
@@ -383,7 +381,7 @@ const styles = StyleSheet.create({
   input: {},
   myBubble: {
     backgroundColor: "gray",
-    padding: "0.5em",
+    padding: 5,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     borderBottomLeftRadius: 10,
@@ -391,7 +389,7 @@ const styles = StyleSheet.create({
   themBubble: {
     backgroundColor: "lightgray",
 
-    padding: "0.5em",
+    padding: 5,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
@@ -400,19 +398,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    marginTop: "5px",
-    marginLeft: "1em",
+    marginTop: 5,
+    marginLeft: 10,
   },
   myMessage: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-end",
-    marginTop: "5px",
-    marginRight: "1em",
+    marginTop: 5,
+    marginRight: 10,
   },
   roomListItem: {
-    marginTop: "1em",
-    padding: "0.5em",
+    marginTop: 10,
+    padding: 5,
     alignItems: "center",
     flexDirection: "row",
     backgroundColor: "lightgray",
