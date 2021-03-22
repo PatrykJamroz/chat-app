@@ -214,10 +214,6 @@ function HomeScreen({ navigation }) {
   ));
 }
 
-//a407ac84-d7df-4b25-804b-00ff1d10acc2
-//10aa0124-d863-413f-9845-dc439d327720
-//33290044-5232-46be-9302-210f5291905b
-
 function RoomScreen(props) {
   const roomID = props.route.params.roomID;
   const { data, loading, error } = useQuery(GET_MESSAGES, {
@@ -268,7 +264,6 @@ function RoomScreen(props) {
 }
 
 function PostMessage(props) {
-  let input;
   const [postMessage, { data }] = useMutation(POST_MESSAGE);
   const [messageText, setMessageText] = useState("");
 
