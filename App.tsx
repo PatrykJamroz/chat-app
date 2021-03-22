@@ -1,11 +1,15 @@
-import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View, Image, Button } from "react-native";
-// import Chat from "./components/Chat";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Button,
+  ScrollView,
+} from "react-native";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-///
 import {
   ApolloClient,
   ApolloProvider,
@@ -22,6 +26,7 @@ import { Socket as PhoenixSocket } from "phoenix";
 import { hasSubscription } from "@jumpn/utils-graphql";
 import { split } from "apollo-link";
 import { TextInput } from "react-native-gesture-handler";
+import Constants from "expo-constants";
 
 const token =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ";
@@ -95,8 +100,6 @@ const GET_ROOMS = gql`
     }
   }
 `;
-
-// room(id: "33290044-5232-46be-9302-210f5291905b")
 
 const GET_MESSAGES = gql`
   query GetMessages($roomID: String!) {
@@ -179,32 +182,10 @@ const MESSAGE_SUBSCRIPTION = gql`
   }
 `;
 
-///
-let roomIDS = [];
-
 function PostMessage() {
   let input;
   const [postMessage, { data }] = useMutation(POST_MESSAGE);
   const [messageText, setMessageText] = useState("");
-
-  //   <View>
-  //   <form
-  //     onSubmit={(e) => {
-  //       e.preventDefault();
-  //       postMessage({ variables: { messageBody: input.value } });
-  //       input.value = "";
-  //     }}
-  //   >
-  //     <input
-  //       ref={(node) => {
-  //         input = node;
-  //       }}
-  //     />
-  //     <button type="submit">
-  //       <Text>Send</Text>
-  //     </button>
-  //   </form>
-  // </View>
 
   const textInput = useRef(null);
 
@@ -235,8 +216,6 @@ function PostMessage() {
           postMessage({ variables: { messageBody: messageText } });
           textInput.current.clear();
           console.log(messageText);
-          setMessageText("");
-          console.log(messageText);
         }}
       />
     </View>
@@ -247,9 +226,6 @@ function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_ROOMS);
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
-  roomIDS = data.usersRooms.rooms.map((room: Room) => {
-    return room.id;
-  });
 
   return data.usersRooms.rooms.map((room: Room) => (
     <View
@@ -285,7 +261,7 @@ function HomeScreen({ navigation }) {
 //10aa0124-d863-413f-9845-dc439d327720
 //33290044-5232-46be-9302-210f5291905b
 
-function RoomScreen(route, navigation, rooomID) {
+function RoomScreen(route) {
   //const { roomID } = route.params; // Cannot read property 'roomID' of undefined
   const roomID = "33290044-5232-46be-9302-210f5291905b"; //hardcoded value
   const { data, loading, error } = useQuery(GET_MESSAGES, {
@@ -294,10 +270,8 @@ function RoomScreen(route, navigation, rooomID) {
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
 
-  //style={{ width: 700, marginLeft: "auto", marginRight: "auto" }}
-
   return (
-    <View>
+    <ScrollView style={styles.scrollView}>
       {data.room.messages.map((message) => (
         <View key={message.id}>
           <View
@@ -333,7 +307,7 @@ function RoomScreen(route, navigation, rooomID) {
         </View>
       ))}
       <PostMessage />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -362,6 +336,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: Constants.statusBarHeight,
   },
   roomPic: {
     width: 50,
@@ -415,5 +390,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "lightgray",
     justifyContent: "center",
+  },
+  scrollView: {
+    marginHorizontal: 20,
   },
 });
