@@ -133,7 +133,7 @@ const GET_MESSAGES = gql`
 `;
 
 const POST_MESSAGE = gql`
-  mutation PostMessage($messageBody: String!) {
+  mutation PostMessage($messageBody: String!, $roomID: String!) {
     loginUser(email: "penny@mail.com", password: "aSGH11ghJKl123!") {
       token
       user {
@@ -145,10 +145,7 @@ const POST_MESSAGE = gql`
         role
       }
     }
-    sendMessage(
-      body: $messageBody
-      roomId: "33290044-5232-46be-9302-210f5291905b"
-    ) {
+    sendMessage(body: $messageBody, roomId: $roomID) {
       body
       id
       insertedAt
@@ -181,46 +178,6 @@ const MESSAGE_SUBSCRIPTION = gql`
     }
   }
 `;
-
-function PostMessage() {
-  let input;
-  const [postMessage, { data }] = useMutation(POST_MESSAGE);
-  const [messageText, setMessageText] = useState("");
-
-  const textInput = useRef(null);
-
-  return (
-    <View
-      style={{
-        width: "100%",
-        alignItems: "center",
-        marginTop: 10,
-        flexDirection: "row",
-        justifyContent: "center",
-      }}
-    >
-      <TextInput
-        onChangeText={(value) => setMessageText(value)}
-        style={{
-          backgroundColor: "white",
-          height: 34,
-          width: 500,
-        }}
-        placeholder="Aa"
-        autoFocus
-        ref={textInput}
-      />
-      <Button
-        title="Send"
-        onPress={() => {
-          postMessage({ variables: { messageBody: messageText } });
-          textInput.current.clear();
-          console.log(messageText);
-        }}
-      />
-    </View>
-  );
-}
 
 function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_ROOMS);
@@ -262,8 +219,7 @@ function HomeScreen({ navigation }) {
 //33290044-5232-46be-9302-210f5291905b
 
 function RoomScreen(props) {
-  const roomID = props.route.params.roomID; // Cannot read property 'roomID' of undefined
-  //const roomID = "33290044-5232-46be-9302-210f5291905b"; //hardcoded value
+  const roomID = props.route.params.roomID;
   const { data, loading, error } = useQuery(GET_MESSAGES, {
     variables: { roomID: roomID },
   });
@@ -306,8 +262,56 @@ function RoomScreen(props) {
           </View>
         </View>
       ))}
-      <PostMessage />
+      <PostMessage roomID={roomID} />
     </ScrollView>
+  );
+}
+
+function PostMessage(props) {
+  let input;
+  const [postMessage, { data }] = useMutation(POST_MESSAGE);
+  const [messageText, setMessageText] = useState("");
+
+  const textInput = useRef(null);
+
+  const roomID = props.roomID;
+
+  return (
+    <View
+      style={{
+        width: "100%",
+        alignItems: "center",
+        marginTop: 10,
+        flexDirection: "row",
+        justifyContent: "center",
+      }}
+    >
+      <TextInput
+        onChangeText={(value) => setMessageText(value)}
+        style={{
+          backgroundColor: "white",
+          height: 34,
+          width: 500,
+        }}
+        placeholder="Aa"
+        autoFocus
+        ref={textInput}
+      />
+      <Button
+        title="Send"
+        onPress={() => {
+          postMessage({
+            variables: {
+              messageBody: messageText,
+              roomID: roomID,
+            },
+          });
+          textInput.current.clear();
+          console.log(messageText);
+          console.log(roomID);
+        }}
+      />
+    </View>
   );
 }
 
@@ -322,7 +326,7 @@ export default function App() {
           <Stack.Screen
             name="Room"
             component={RoomScreen}
-            options={{ title: "Room id:" }}
+            options={{ title: "Room" }}
           />
         </Stack.Navigator>
       </NavigationContainer>
