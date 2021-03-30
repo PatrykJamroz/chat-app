@@ -18,6 +18,7 @@ import {
   gql,
   useQuery,
   useMutation,
+  useSubscription,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import * as AbsintheSocket from "@absinthe/socket";
@@ -258,6 +259,7 @@ function RoomScreen(props) {
           </View>
         </View>
       ))}
+      <NewMessage />
       <PostMessage roomID={roomID} />
     </ScrollView>
   );
@@ -308,6 +310,11 @@ function PostMessage(props) {
       />
     </View>
   );
+}
+
+function NewMessage() {
+  const { data } = useSubscription(MESSAGE_SUBSCRIPTION);
+  return <Text>{data.messageAdded.body}</Text>;
 }
 
 const Stack = createStackNavigator();
