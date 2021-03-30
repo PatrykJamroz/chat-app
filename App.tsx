@@ -313,7 +313,9 @@ function PostMessage(props) {
 }
 
 function NewMessage() {
-  const { data } = useSubscription(MESSAGE_SUBSCRIPTION);
+  const { data, loading, error } = useSubscription(MESSAGE_SUBSCRIPTION);
+  if (loading) return <Text>Loading...</Text>;
+  if (error) return <Text>Error :(</Text>;
   return <Text>{data.messageAdded.body}</Text>;
 }
 
