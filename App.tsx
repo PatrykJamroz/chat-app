@@ -215,7 +215,7 @@ function HomeScreen({ navigation }) {
   ));
 }
 
-let unsubscribe = null;
+// let unsubscribe = null;
 
 function RoomScreen(props) {
   const roomID = props.route.params.roomID;
@@ -226,21 +226,19 @@ function RoomScreen(props) {
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
 
-  if (!unsubscribe) {
-    unsubscribe = subscribeToMore({
-      document: MESSAGE_SUBSCRIPTION,
-      variables: { roomID: roomID },
-      updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) return prev;
-        const newFeedItem = subscriptionData.data.messageAdded;
-        return Object.assign({}, prev, {
-          room: {
-            messages: [newFeedItem, ...prev.room.messages],
-          },
-        });
-      },
-    });
-  }
+  subscribeToMore({
+    document: MESSAGE_SUBSCRIPTION,
+    variables: { roomID: roomID },
+    updateQuery: (prev, { subscriptionData }) => {
+      if (!subscriptionData.data) return prev;
+      const newFeedItem = subscriptionData.data.messageAdded;
+      return Object.assign({}, prev, {
+        room: {
+          messages: [newFeedItem, ...prev.room.messages],
+        },
+      });
+    },
+  });
 
   return (
     <ScrollView style={styles.scrollView}>
