@@ -10,13 +10,13 @@ import {
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { client } from "./components/ApolloSetup";
+import { client } from "./ApolloSetup";
 import {
   GET_ROOMS,
   GET_MESSAGES,
   POST_MESSAGE,
   MESSAGE_SUBSCRIPTION,
-} from "./components/Querries";
+} from "./Querries";
 import {
   ApolloProvider,
   useQuery,
@@ -25,36 +25,59 @@ import {
 } from "@apollo/client";
 import { TextInput } from "react-native-gesture-handler";
 import Constants from "expo-constants";
-import { login } from "./misc/crede";
-import HomeScreen from "./components/HomeScreen";
-import RoomScreen from "./components/RoomScreen";
+import { login } from "../misc/crede";
 
-interface Room {
-  id: string;
-  name: string;
-  roomPic: string;
-}
+export default function PostMessage(props) {
+  const [postMessage, { data }] = useMutation(POST_MESSAGE, {
+    variables: { email: login.email, password: login.password },
+  });
+  const [messageText, setMessageText] = useState("");
 
-const Stack = createStackNavigator();
+  const textInput = useRef(null);
 
-export default function App() {
+  const roomID = props.roomID;
+
   return (
-    <ApolloProvider client={client}>
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="Home Screen / Room list" component={HomeScreen} />
-          <Stack.Screen
-            name="Room"
-            component={RoomScreen}
-            // options={{ title: "nazwa pokoju" }}
-            options={({ route }) => ({ title: route.params.roomName })}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </ApolloProvider>
+    <View
+      style={{
+        width: "100%",
+        alignItems: "center",
+        marginTop: 10,
+        flexDirection: "row",
+        justifyContent: "center",
+      }}
+    >
+      <TextInput
+        onChangeText={(value) => setMessageText(value)}
+        style={{
+          backgroundColor: "white",
+          height: 34,
+          width: 500,
+        }}
+        placeholder="Aa"
+        autoFocus
+        ref={textInput}
+      />
+      <Button
+        title="Send"
+        onPress={() => {
+          postMessage({
+            variables: {
+              messageBody: messageText,
+              roomID: roomID,
+            },
+          });
+          textInput.current.clear();
+          console.log(messageText);
+          console.log(roomID);
+        }}
+      />
+    </View>
   );
 }
 
+//
+///
 const styles = StyleSheet.create({
   container: {
     flex: 1,
