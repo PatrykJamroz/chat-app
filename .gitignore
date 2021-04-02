@@ -11,3 +11,6 @@ web-build/
 
 # macOS
 .DS_Store
+
+./misc/crede.ts
+src/misc/crede.ts
