@@ -10,175 +10,28 @@ import {
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { client } from "./components/ApolloSetup";
 import {
-  ApolloClient,
+  GET_ROOMS,
+  GET_MESSAGES,
+  POST_MESSAGE,
+  MESSAGE_SUBSCRIPTION,
+} from "./components/Querries";
+import {
   ApolloProvider,
-  InMemoryCache,
-  createHttpLink,
-  gql,
   useQuery,
   useMutation,
   useSubscription,
 } from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
-import * as AbsintheSocket from "@absinthe/socket";
-import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
-import { Socket as PhoenixSocket } from "phoenix";
-import { hasSubscription } from "@jumpn/utils-graphql";
-import { split } from "apollo-link";
 import { TextInput } from "react-native-gesture-handler";
 import Constants from "expo-constants";
-
-const token =
-  "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ";
-
-const httpLink = createHttpLink({
-  uri: "https://chat.thewidlarzgroup.com/api/graphiql",
-});
-
-const authLink = setContext((_, { headers }) => {
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
-});
-
-const authedHttpLink = authLink.concat(httpLink);
-
-const phoenixSocket = new PhoenixSocket(
-  "wss://chat.thewidlarzgroup.com/socket",
-  {
-    params: () => {
-      return {
-        token:
-          "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjaGF0bHkiLCJleHAiOjE2MTc2NDEyNTYsImlhdCI6MTYxNTIyMjA1NiwiaXNzIjoiY2hhdGx5IiwianRpIjoiZjBhOTM4MTEtZGJmYy00MWQ4LTg5NmUtOGJhYjFhMjliNThkIiwibmJmIjoxNjE1MjIyMDU1LCJzdWIiOiJiYTdiMTJiMy05Y2IxLTQ0ZDUtODk5MS03Zjc2MjBjODNjMzMiLCJ0eXAiOiJhY2Nlc3MifQ.j81t3nMBrrt3bpVghED4gPTZoiQun2j5xEhSswnZGz8-Rbunttkmw5aIuFPHzfbp552HcPEnQfzsLlcsSpOmNQ",
-      };
-    },
-  }
-);
-
-const absintheSocket = AbsintheSocket.create(phoenixSocket);
-
-const websocketLink = createAbsintheSocketLink(absintheSocket);
-
-const link = split(
-  (operation) => hasSubscription(operation.query),
-  websocketLink,
-  authedHttpLink
-);
-
-const cache = new InMemoryCache();
-
-const client = new ApolloClient({
-  link,
-  cache,
-});
+import { login } from "./misc/crede";
 
 interface Room {
   id: string;
   name: string;
   roomPic: string;
 }
-
-const GET_ROOMS = gql`
-  {
-    usersRooms {
-      rooms {
-        id
-        name
-        roomPic
-      }
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
-    }
-  }
-`;
-
-const GET_MESSAGES = gql`
-  query GetMessages($roomID: String!) {
-    room(id: $roomID) {
-      id
-      messages {
-        body
-        id
-        insertedAt
-        user {
-          email
-          firstName
-          id
-          lastName
-          profilePic
-          role
-        }
-      }
-      name
-      roomPic
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
-    }
-  }
-`;
-
-const POST_MESSAGE = gql`
-  mutation PostMessage($messageBody: String!, $roomID: String!) {
-    loginUser(email: "penny@mail.com", password: "aSGH11ghJKl123!") {
-      token
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
-    }
-    sendMessage(body: $messageBody, roomId: $roomID) {
-      body
-      id
-      insertedAt
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
-    }
-  }
-`;
-
-const MESSAGE_SUBSCRIPTION = gql`
-  subscription messageAdded($roomID: String!) {
-    messageAdded(roomId: $roomID) {
-      body
-      id
-      insertedAt
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
-    }
-  }
-`;
 
 function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_ROOMS);
@@ -205,7 +58,10 @@ function HomeScreen({ navigation }) {
           <Button
             title="Go to room"
             onPress={() => {
-              navigation.navigate("Room", { roomID: room.id });
+              navigation.navigate("Room", {
+                roomID: room.id,
+                roomName: room.name,
+              });
               console.log("clicked room id: " + room.id);
             }}
           />
@@ -214,8 +70,6 @@ function HomeScreen({ navigation }) {
     </View>
   ));
 }
-
-// let unsubscribe = null;
 
 function RoomScreen(props) {
   const roomID = props.route.params.roomID;
@@ -282,7 +136,9 @@ function RoomScreen(props) {
 }
 
 function PostMessage(props) {
-  const [postMessage, { data }] = useMutation(POST_MESSAGE);
+  const [postMessage, { data }] = useMutation(POST_MESSAGE, {
+    variables: { email: login.email, password: login.password },
+  });
   const [messageText, setMessageText] = useState("");
 
   const textInput = useRef(null);
@@ -328,13 +184,6 @@ function PostMessage(props) {
   );
 }
 
-// function NewMessage() {
-//   const { data, loading, error } = useSubscription(MESSAGE_SUBSCRIPTION);
-//   if (loading) return <Text>Loading...</Text>;
-//   if (error) return <Text>Error :(</Text>;
-//   return <Text>{data.messageAdded.body}</Text>;
-// }
-
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -346,7 +195,8 @@ export default function App() {
           <Stack.Screen
             name="Room"
             component={RoomScreen}
-            options={{ title: "Room" }}
+            // options={{ title: "nazwa pokoju" }}
+            options={({ route }) => ({ title: route.params.roomName })}
           />
         </Stack.Navigator>
       </NavigationContainer>
