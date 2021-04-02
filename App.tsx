@@ -163,8 +163,8 @@ const POST_MESSAGE = gql`
 `;
 
 const MESSAGE_SUBSCRIPTION = gql`
-  subscription {
-    messageAdded(roomId: "33290044-5232-46be-9302-210f5291905b") {
+  subscription messageAdded($roomID: String!) {
+    messageAdded(roomId: $roomID) {
       body
       id
       insertedAt
@@ -215,13 +215,32 @@ function HomeScreen({ navigation }) {
   ));
 }
 
+let unsubscribe = null;
+
 function RoomScreen(props) {
   const roomID = props.route.params.roomID;
-  const { data, loading, error } = useQuery(GET_MESSAGES, {
+  const { data, loading, error, subscribeToMore } = useQuery(GET_MESSAGES, {
     variables: { roomID: roomID },
   });
+
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error :(</Text>;
+
+  if (!unsubscribe) {
+    unsubscribe = subscribeToMore({
+      document: MESSAGE_SUBSCRIPTION,
+      variables: { roomID: roomID },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const newFeedItem = subscriptionData.data.messageAdded;
+        return Object.assign({}, prev, {
+          room: {
+            messages: [newFeedItem, ...prev.room.messages],
+          },
+        });
+      },
+    });
+  }
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -259,7 +278,6 @@ function RoomScreen(props) {
           </View>
         </View>
       ))}
-      <NewMessage />
       <PostMessage roomID={roomID} />
     </ScrollView>
   );
@@ -312,12 +330,12 @@ function PostMessage(props) {
   );
 }
 
-function NewMessage() {
-  const { data, loading, error } = useSubscription(MESSAGE_SUBSCRIPTION);
-  if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error :(</Text>;
-  return <Text>{data.messageAdded.body}</Text>;
-}
+// function NewMessage() {
+//   const { data, loading, error } = useSubscription(MESSAGE_SUBSCRIPTION);
+//   if (loading) return <Text>Loading...</Text>;
+//   if (error) return <Text>Error :(</Text>;
+//   return <Text>{data.messageAdded.body}</Text>;
+// }
 
 const Stack = createStackNavigator();
 
