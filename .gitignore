@@ -13,4 +13,4 @@ web-build/
 .DS_Store
 
 ./misc/crede.ts
-src/misc/crede.js
+src/misc/crede.ts
