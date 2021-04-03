@@ -4,6 +4,7 @@ import "react-native-gesture-handler";
 import { GET_MESSAGES, MESSAGE_SUBSCRIPTION } from "./Querries";
 import { useQuery } from "@apollo/client";
 import PostMessage from "./PostMessage";
+import { GiftedChat } from "react-native-gifted-chat";
 
 export default function RoomScreen(props) {
   const roomID = props.route.params.roomID;
