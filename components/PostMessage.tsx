@@ -17,22 +17,9 @@ export default function PostMessage(props) {
   const roomID = props.roomID;
 
   return (
-    <View
-      style={{
-        width: "100%",
-        alignItems: "center",
-        marginTop: 10,
-        flexDirection: "row",
-        justifyContent: "center",
-      }}
-    >
+    <View>
       <TextInput
         onChangeText={(value) => setMessageText(value)}
-        style={{
-          backgroundColor: "white",
-          height: 34,
-          width: 500,
-        }}
         placeholder="Aa"
         autoFocus
         ref={textInput}

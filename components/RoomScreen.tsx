@@ -4,7 +4,6 @@ import "react-native-gesture-handler";
 import { GET_MESSAGES, MESSAGE_SUBSCRIPTION } from "./Querries";
 import { useQuery } from "@apollo/client";
 import PostMessage from "./PostMessage";
-import { styles } from "./styles";
 
 export default function RoomScreen(props) {
   const roomID = props.route.params.roomID;
@@ -30,38 +29,11 @@ export default function RoomScreen(props) {
   });
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView>
       {data.room.messages.map((message) => (
         <View key={message.id}>
-          <View
-            style={
-              message.user.firstName === "Penny"
-                ? styles.myMessage
-                : styles.themMessage
-            }
-          >
-            <Image
-              style={
-                message.user.firstName === "Penny"
-                  ? styles.roomPicMy
-                  : styles.roomPicThem
-              }
-              source={{
-                uri:
-                  message.user.profilePic !== ""
-                    ? message.user.profilePic
-                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/600px-No_image_available.svg.png",
-              }}
-            />
-            <Text
-              style={
-                message.user.firstName === "Penny"
-                  ? styles.myBubble
-                  : styles.themBubble
-              }
-            >
-              {message.body}
-            </Text>
+          <View>
+            <Text>{message.body}</Text>
           </View>
         </View>
       ))}
