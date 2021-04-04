@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Text, View, Image, ScrollView } from "react-native";
+import React from "react";
+import { Text, View } from "react-native";
 import "react-native-gesture-handler";
 import { GET_MESSAGES, MESSAGE_SUBSCRIPTION, POST_MESSAGE } from "./Querries";
 import { useQuery, useMutation } from "@apollo/client";
@@ -40,6 +40,8 @@ export default function RoomScreen(props) {
           text: msg.body,
           user: {
             _id: msg.user.email,
+            name: msg.user.firstName,
+            avatar: msg.user.profilePic,
           },
         }))}
         onSend={(e) => {
@@ -54,6 +56,8 @@ export default function RoomScreen(props) {
         }}
         user={{ _id: login.email }}
         inverted={false}
+        showUserAvatar={false}
+        renderUsernameOnMessage={true}
       />
     </View>
   );
