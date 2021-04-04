@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 const GET_ROOMS = gql`
-  {
+  query GetRooms {
     usersRooms {
       rooms {
         id
