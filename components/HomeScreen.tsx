@@ -3,7 +3,6 @@ import { Text, View, Image, Button } from "react-native";
 import "react-native-gesture-handler";
 import { GET_ROOMS } from "./Querries";
 import { useQuery } from "@apollo/client";
-import { styles } from "./styles";
 
 interface Room {
   id: string;
@@ -17,13 +16,9 @@ export default function HomeScreen({ navigation }) {
   if (error) return <Text>Error :(</Text>;
 
   return data.usersRooms.rooms.map((room: Room) => (
-    <View
-      style={{ width: 500, marginLeft: "auto", marginRight: "auto" }}
-      key={room.id}
-    >
-      <View style={styles.roomListItem}>
+    <View key={room.id}>
+      <View>
         <Image
-          style={styles.roomPic}
           source={{
             uri:
               room.roomPic !== ""
