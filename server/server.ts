@@ -1,16 +1,41 @@
 //import { GraphQLServer } from "graphql-yoga";
 const { GraphQLServer } = require("graphql-yoga");
 
-// interface RoomsType {
-//   id: String;
-//   name: String;
-//   picture: String;
-// }
-
-const rooms = [];
+const rooms = [
+  {
+    id: 0,
+    name: "Beer group",
+    picture: "picture of beer",
+    messages: [
+      {
+        user: {
+          name: "PJ",
+          id: 0,
+          profilePic: "PJ pic",
+        },
+        body: "Hey mates! Beer tonight?",
+      },
+    ],
+  },
+  {
+    id: 1,
+    name: "Bikes group",
+    picture: "picture of bike",
+    messages: [
+      {
+        user: {
+          name: "MJ",
+          id: 1,
+          profilePic: "MJ pic",
+        },
+        body: "Ride tomorrow morning?",
+      },
+    ],
+  },
+];
 const room = {};
 
-// const messages = [];
+const messages = [];
 
 const typeDefs = `
 
@@ -18,9 +43,10 @@ type RoomsType {
   id: ID!
   name: String
   picture: String
+  messages: [SingleMessage]
 }
 
-type SingleRoomType {
+type SingleRoomType{
   id: ID!
   name: String
   picture: String
@@ -28,10 +54,8 @@ type SingleRoomType {
 }
 
 type SingleMessage {
-  id: ID
   user: SingleUserType
   body: String
-  insertedAt: String
 }
 
 type SingleUserType {
@@ -42,7 +66,7 @@ type SingleUserType {
 
 type Query {
     rooms: [RoomsType]
-    room(id: ID!): SingleRoomType
+    room: SingleRoomType
 }
 
 type Mutation {
@@ -55,12 +79,12 @@ const resolvers = {
   Query: {
     // messages: () => messages,
     rooms: () => rooms,
-    room: () => room,
+    // room: () => rooms,
   },
   Mutation: {
-    //   postMessage: (parent, { user, body }) => {
+    //   postMessage: (parent, { user, body, roomID }) => {
     //     const id = messages.length;
-    //     messages.push({
+    //     room[roomID].messages.push({
     //       id,
     //       user,
     //       body,
