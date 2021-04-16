@@ -70,7 +70,7 @@ type Query {
 }
 
 type Mutation {
-  postMessage(user: String!, body: String!): ID!
+  postMessage(user: String!, body: String!, roomID: String!): ID!
   createRoom(name: String!): ID!
 }
 `;
@@ -82,16 +82,18 @@ const resolvers = {
     // room: () => rooms,
   },
   Mutation: {
-    //   postMessage: (parent, { user, body, roomID }) => {
-    //     const id = messages.length;
-    //     room[roomID].messages.push({
-    //       id,
-    //       user,
-    //       body,
-    //     });
-    //     return id;
-    //   },
-    // },
+    postMessage: (parent, { user, body, roomID }) => {
+      const id = rooms[roomID].messages.length;
+      rooms[roomID].messages.push({
+        user: {
+          name: user,
+          id: id,
+          profilePic: "USER pic",
+        },
+        body: body,
+      });
+      return id;
+    },
     createRoom: (parent, { name }) => {
       const id = rooms.length;
       rooms.push({ id, name });
