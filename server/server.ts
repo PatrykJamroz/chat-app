@@ -1,5 +1,5 @@
 //import { GraphQLServer } from "graphql-yoga";
-const { GraphQLServer } = require("graphql-yoga");
+const { GraphQLServer, PubSub } = require("graphql-yoga");
 
 const rooms = [
   {
@@ -73,7 +73,14 @@ type Mutation {
   postMessage(user: String!, body: String!, roomID: String!): ID!
   createRoom(name: String!): ID!
 }
+
+type Subscription {
+  rooms: [RoomsType]
+}
 `;
+
+const subscribers = [];
+const onRoomsUpdates = (fn) => subscribers.push(fn);
 
 const resolvers = {
   Query: {
@@ -92,6 +99,7 @@ const resolvers = {
         },
         body: body,
       });
+      subscribers.forEach((fn) => fn());
       return id;
     },
     createRoom: (parent, { name }) => {
@@ -100,9 +108,20 @@ const resolvers = {
       return id;
     },
   },
+  Subscription: {
+    rooms: {
+      subscribe: (parent, args, { pubsub }) => {
+        const channel = Math.random().toString(36).slice(2, 15);
+        onRoomsUpdates(() => pubsub.publish(channel, { rooms }));
+        setTimeout(() => pubsub.publish(channel, { rooms }), 0);
+        return pubsub.asyncIterator(channel);
+      },
+    },
+  },
 };
 
-const server = new GraphQLServer({ typeDefs, resolvers });
+const pubsub = new PubSub();
+const server = new GraphQLServer({ typeDefs, resolvers, context: { pubsub } });
 server.start(({ port }) => {
   console.log(`Server on http://localhost:${port}/`);
 });
