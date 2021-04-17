@@ -9,30 +9,27 @@ import { split } from "apollo-link";
 import { token } from "../misc/crede";
 
 const httpLink = createHttpLink({
-  uri: "https://chat.thewidlarzgroup.com/api/graphiql",
+  uri: "http://localhost:4000/",
 });
 
-const authLink = setContext((_, { headers }) => {
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
+// const authLink = setContext((_, { headers }) => {
+//   return {
+//     headers: {
+//       ...headers,
+//       authorization: token ? `Bearer ${token}` : "",
+//     },
+//   };
+// });
+
+// const authedHttpLink = authLink.concat(httpLink);
+
+const phoenixSocket = new PhoenixSocket("ws://localhost:4000/", {
+  // params: () => {
+  //   return {
+  //     token: token,
+  //   };
+  // },
 });
-
-const authedHttpLink = authLink.concat(httpLink);
-
-const phoenixSocket = new PhoenixSocket(
-  "wss://chat.thewidlarzgroup.com/socket",
-  {
-    params: () => {
-      return {
-        token: token,
-      };
-    },
-  }
-);
 
 const absintheSocket = AbsintheSocket.create(phoenixSocket);
 
@@ -41,7 +38,8 @@ const websocketLink = createAbsintheSocketLink(absintheSocket);
 const link = split(
   (operation) => hasSubscription(operation.query),
   websocketLink,
-  authedHttpLink
+  // authedHttpLink
+  httpLink
 );
 
 const cache = new InMemoryCache();

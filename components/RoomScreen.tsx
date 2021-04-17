@@ -1,7 +1,10 @@
 import React from "react";
 import { Text, View } from "react-native";
 import "react-native-gesture-handler";
-import { GET_MESSAGES, MESSAGE_SUBSCRIPTION, POST_MESSAGE } from "./Querries";
+import {
+  /*GET_MESSAGES,*/ MESSAGE_SUBSCRIPTION,
+  POST_MESSAGE,
+} from "./Querries";
 import { useQuery, useMutation } from "@apollo/client";
 // import PostMessage from "./PostMessage";
 import { GiftedChat } from "react-native-gifted-chat";
