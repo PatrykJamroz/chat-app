@@ -35,7 +35,7 @@ const rooms = [
 ];
 const room = {};
 
-const messages = [];
+// const messages = [];
 
 const typeDefs = `
 
@@ -60,7 +60,6 @@ type SingleMessage {
 
 type SingleUserType {
   name: String
-  id: ID
   profilePic: String
 }
 
@@ -90,21 +89,21 @@ const resolvers = {
   },
   Mutation: {
     postMessage: (parent, { user, body, roomID }) => {
-      const id = rooms[roomID].messages.length;
+      // const id = rooms[roomID].messages.length;
       rooms[roomID].messages.push({
         user: {
           name: user,
-          id: id,
           profilePic: "USER pic",
         },
         body: body,
       });
       subscribers.forEach((fn) => fn());
-      return id;
+      return roomID;
     },
     createRoom: (parent, { name }) => {
       const id = rooms.length;
-      rooms.push({ id, name });
+      const messages = [];
+      rooms.push({ id, name, messages });
       return id;
     },
   },
