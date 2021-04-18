@@ -5,7 +5,6 @@ const GET_ROOMS = gql`
     rooms {
       id
       name
-      picture
       messages {
         user {
           name
@@ -59,7 +58,6 @@ const MESSAGE_SUBSCRIPTION = gql`
     rooms {
       id
       name
-      picture
       messages {
         user {
           name

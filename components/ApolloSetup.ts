@@ -7,11 +7,11 @@ import { hasSubscription } from "@jumpn/utils-graphql";
 import { split } from "apollo-link";
 import { WebSocketLink } from "@apollo/client/link/ws";
 
-import { token } from "../misc/crede";
+// import { token } from "../misc/crede";
 
-const httpLink = createHttpLink({
-  uri: "http://localhost:4000/",
-});
+// const httpLink = createHttpLink({
+//   uri: "http://localhost:4000/",
+// });
 
 // const authLink = setContext((_, { headers }) => {
 //   return {

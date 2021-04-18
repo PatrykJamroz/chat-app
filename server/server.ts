@@ -5,12 +5,10 @@ const rooms = [
   {
     id: 0,
     name: "Beer group",
-    picture: "picture of beer",
     messages: [
       {
         user: {
           name: "PJ",
-          id: 0,
           profilePic: "PJ pic",
         },
         body: "Hey mates! Beer tonight?",
@@ -20,12 +18,10 @@ const rooms = [
   {
     id: 1,
     name: "Bikes group",
-    picture: "picture of bike",
     messages: [
       {
         user: {
           name: "MJ",
-          id: 1,
           profilePic: "MJ pic",
         },
         body: "Ride tomorrow morning?",
@@ -40,17 +36,9 @@ const room = {};
 const typeDefs = `
 
 type RoomsType {
-  id: ID!
+  id: String
   name: String
-  picture: String
   messages: [SingleMessage]
-}
-
-type SingleRoomType{
-  id: ID!
-  name: String
-  picture: String
-
 }
 
 type SingleMessage {
@@ -65,7 +53,6 @@ type SingleUserType {
 
 type Query {
     rooms: [RoomsType]
-    room: SingleRoomType
 }
 
 type Mutation {

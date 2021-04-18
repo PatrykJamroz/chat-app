@@ -4,11 +4,11 @@ import "react-native-gesture-handler";
 import { GET_ROOMS } from "./Querries";
 import { useQuery } from "@apollo/client";
 
-interface Room {
-  id: string;
-  name: string;
-  picture: string;
-}
+// interface Room {
+//   id: string;
+//   name: string;
+//   picture: string;
+// }
 
 export default function HomeScreen({ navigation }) {
   const { data, loading, error } = useQuery(GET_ROOMS);
@@ -18,14 +18,14 @@ export default function HomeScreen({ navigation }) {
   return data.rooms.map((room) => (
     <View key={room.id}>
       <View>
-        <Image
+        {/* <Image
           source={{
             uri:
               room.picture !== ""
                 ? room.picture
                 : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/600px-No_image_available.svg.png",
           }}
-        />
+        /> */}
         <View>
           <Text>
             {room.id} {room.name}

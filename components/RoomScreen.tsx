@@ -10,7 +10,7 @@ import { useQuery, useMutation } from "@apollo/client";
 // import PostMessage from "./PostMessage";
 import { GiftedChat } from "react-native-gifted-chat";
 import { styles } from "./styles";
-import { login } from "../misc/crede";
+// import { login } from "../misc/crede";
 
 export default function RoomScreen(props) {
   const roomID = props.route.params.roomID;
