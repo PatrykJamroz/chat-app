@@ -23,12 +23,12 @@ const httpLink = createHttpLink({
 
 // const authedHttpLink = authLink.concat(httpLink);
 
-const phoenixSocket = new PhoenixSocket("ws://localhost:4000/", {
-  // params: () => {
-  //   return {
-  //     token: token,
-  //   };
-  // },
+const phoenixSocket = new PhoenixSocket("ws://localhost:4000", {
+  params: {} /*() => {
+    return {
+      // token: token,
+    };
+  },*/,
 });
 
 const absintheSocket = AbsintheSocket.create(phoenixSocket);
