@@ -5,47 +5,18 @@ const GET_ROOMS = gql`
     rooms {
       id
       name
-      messages {
-        user {
-          name
-          profilePic
-        }
-        body
-      }
     }
   }
 `;
 
-// const GET_MESSAGES = gql`
-//   query GetMessages($roomID: String!) {
-//     room(id: $roomID) {
-//       id
-//       messages {
-//         body
-//         id
-//         insertedAt
-//         user {
-//           email
-//           firstName
-//           id
-//           lastName
-//           profilePic
-//           role
-//         }
-//       }
-//       name
-//       roomPic
-//       user {
-//         email
-//         firstName
-//         id
-//         lastName
-//         profilePic
-//         role
-//       }
-//     }
-//   }
-// `;
+const GET_MESSAGES = gql`
+  query GetMessages($roomID: String!) {
+    messages(roomID: $roomID) {
+      user
+      body
+    }
+  }
+`;
 
 const POST_MESSAGE = gql`
   mutation postMessage($user: String!, $roomID: String!, $body: String!) {
@@ -54,19 +25,12 @@ const POST_MESSAGE = gql`
 `;
 
 const MESSAGE_SUBSCRIPTION = gql`
-  subscription rooms {
-    rooms {
-      id
-      name
-      messages {
-        user {
-          name
-          profilePic
-        }
-        body
-      }
+  subscription messageAdded($roomID: String!) {
+    messageAdded(roomID: $roomID) {
+      user
+      body
     }
   }
 `;
 
-export { GET_ROOMS, /*GET_MESSAGES,*/ POST_MESSAGE, MESSAGE_SUBSCRIPTION };
+export { GET_ROOMS, GET_MESSAGES, POST_MESSAGE, MESSAGE_SUBSCRIPTION };

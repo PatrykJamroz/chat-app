@@ -1,7 +1,7 @@
 //import { GraphQLServer } from "graphql-yoga";
 const { GraphQLServer, PubSub } = require("graphql-yoga");
 
-const rooms = [
+const chat = [
   {
     id: 0,
     name: "Beer group",
@@ -29,19 +29,29 @@ const rooms = [
     ],
   },
 ];
-const room = {};
-
-// const messages = [];
 
 const typeDefs = `
+
+type Query {
+  rooms: [RoomsType]
+  messages(roomID: String!): [SingleMessageType]
+}
+
+type Mutation {
+postMessage(user: String!, body: String!, roomID: String!): ID!
+createRoom(name: String!): ID!
+}
+
+type Subscription {
+  messageAdded(roomID: String!): [SingleMessageType]
+}
 
 type RoomsType {
   id: String
   name: String
-  messages: [SingleMessage]
 }
 
-type SingleMessage {
+type SingleMessageType {
   user: SingleUserType
   body: String
 }
@@ -50,19 +60,6 @@ type SingleUserType {
   name: String
   profilePic: String
 }
-
-type Query {
-    rooms: [RoomsType]
-}
-
-type Mutation {
-  postMessage(user: String!, body: String!, roomID: String!): ID!
-  createRoom(name: String!): ID!
-}
-
-type Subscription {
-  rooms: [RoomsType]
-}
 `;
 
 const subscribers = [];
@@ -70,14 +67,15 @@ const onRoomsUpdates = (fn) => subscribers.push(fn);
 
 const resolvers = {
   Query: {
-    // messages: () => messages,
-    rooms: () => rooms,
+    //
+    rooms: () => chat,
+    messages: (parent, { roomID }) => chat[roomID].messages,
     // room: () => rooms,
   },
   Mutation: {
     postMessage: (parent, { user, body, roomID }) => {
       // const id = rooms[roomID].messages.length;
-      rooms[roomID].messages.push({
+      chat[roomID].messages.push({
         user: {
           name: user,
           profilePic: "USER pic",
@@ -90,16 +88,16 @@ const resolvers = {
     createRoom: (parent, { name }) => {
       const id = rooms.length;
       const messages = [];
-      rooms.push({ id, name, messages });
+      chat.push({ id, name, messages });
       return id;
     },
   },
   Subscription: {
-    rooms: {
+    messageAdded: {
       subscribe: (parent, args, { pubsub }) => {
         const channel = Math.random().toString(36).slice(2, 15);
-        onRoomsUpdates(() => pubsub.publish(channel, { rooms }));
-        setTimeout(() => pubsub.publish(channel, { rooms }), 0);
+        onRoomsUpdates(() => pubsub.publish(channel, { chat }));
+        setTimeout(() => pubsub.publish(channel, { chat }), 0);
         return pubsub.asyncIterator(channel);
       },
     },

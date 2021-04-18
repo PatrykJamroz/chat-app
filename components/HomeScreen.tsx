@@ -37,7 +37,7 @@ export default function HomeScreen({ navigation }) {
                 roomID: room.id,
                 roomName: room.name,
               });
-              console.log("clicked room id: " + room.id);
+              console.log("clicked room id: " + room.id + " " + room.name);
             }}
           />
         </View>
