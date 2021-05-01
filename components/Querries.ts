@@ -12,7 +12,10 @@ const GET_ROOMS = gql`
 const GET_MESSAGES = gql`
   query GetMessages($roomID: String!) {
     messages(roomID: $roomID) {
-      user
+      user {
+        name
+        profilePic
+      }
       body
     }
   }
