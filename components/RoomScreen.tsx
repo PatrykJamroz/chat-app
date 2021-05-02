@@ -16,7 +16,6 @@ import { styles } from "./styles";
 export default function RoomScreen(props) {
   const roomID = props.route.params.roomID;
   const [postMessage] = useMutation(POST_MESSAGE);
-  console.log("room id: " + roomID);
   const { data, loading, error, subscribeToMore } = useQuery(GET_MESSAGES, {
     variables: { roomID: roomID },
   });
@@ -29,11 +28,12 @@ export default function RoomScreen(props) {
     variables: { roomID: roomID },
     updateQuery: (prev, { subscriptionData }) => {
       if (!subscriptionData.data) return prev;
-      const newFeedItem = subscriptionData.data.messages;
+      const newFeedItem = subscriptionData.data;
       return Object.assign({}, prev, {
-        // chat: {
-        messages: [...prev.messages, newFeedItem],
-        // },
+        chat: {
+          ...prev.chat,
+          messages: [...prev.messages, newFeedItem],
+        },
       });
     },
   });

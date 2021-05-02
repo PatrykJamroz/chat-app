@@ -30,7 +30,10 @@ const POST_MESSAGE = gql`
 const MESSAGE_SUBSCRIPTION = gql`
   subscription messageAdded($roomID: String!) {
     messageAdded(roomID: $roomID) {
-      user
+      user {
+        name
+        profilePic
+      }
       body
     }
   }

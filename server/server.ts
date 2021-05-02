@@ -1,4 +1,3 @@
-//import { GraphQLServer } from "graphql-yoga";
 const { GraphQLServer, PubSub } = require("graphql-yoga");
 
 const chat = [
@@ -67,10 +66,8 @@ const onRoomsUpdates = (fn) => subscribers.push(fn);
 
 const resolvers = {
   Query: {
-    //
     rooms: () => chat,
     messages: (parent, { roomID }) => chat[roomID].messages,
-    // room: () => rooms,
   },
   Mutation: {
     postMessage: (parent, { user, body, roomID }) => {
@@ -94,10 +91,20 @@ const resolvers = {
   },
   Subscription: {
     messageAdded: {
-      subscribe: (parent, args, { pubsub }) => {
+      subscribe: (parent, args, { pubsub, name, body }) => {
         const channel = Math.random().toString(36).slice(2, 15);
-        onRoomsUpdates(() => pubsub.publish(channel, { chat }));
-        setTimeout(() => pubsub.publish(channel, { chat }), 0);
+        onRoomsUpdates(() =>
+          pubsub.publish(channel, {
+            messages: [{ user: { name: name, profilePic: "" }, body: body }],
+          })
+        );
+        setTimeout(
+          () =>
+            pubsub.publish(channel, {
+              messages: [{ user: { name: name, profilePic: "" }, body: body }],
+            }),
+          0
+        );
         return pubsub.asyncIterator(channel);
       },
     },
