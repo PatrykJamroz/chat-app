@@ -82,7 +82,7 @@ const resolvers = {
       };
       chat[roomID].messages.push(newMessage);
       // subscribers.forEach((fn) => fn());
-      pubsub.publish("channel", { messageAdded: newMessage });
+      pubsub.publish("messageAdded", { messageAdded: newMessage });
       return newMessage;
     },
     createRoom: (parent, { name }) => {
@@ -97,7 +97,7 @@ const resolvers = {
       subscribe: (parent, args, { pubsub }) => {
         // onRoomsUpdates(() => pubsub.publish(channel, "messageAdded"));
         // setTimeout(() => pubsub.publish(channel, "messageAdded"), 0);
-        return pubsub.asyncIterator(channel);
+        return pubsub.asyncIterator("messageAdded");
       },
     },
   },

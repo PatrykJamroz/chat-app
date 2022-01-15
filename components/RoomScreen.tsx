@@ -28,12 +28,15 @@ export default function RoomScreen(props) {
     variables: { roomID: roomID },
     updateQuery: (prev, { subscriptionData }) => {
       if (!subscriptionData.data) return prev;
-      const newFeedItem = subscriptionData.data;
+      const newFeedItem = subscriptionData.data.messageAdded;
+      console.log("newfeeditem", newFeedItem);
       return Object.assign({}, prev, {
-        chat: {
-          ...prev.chat,
-          messages: [...prev.messages, newFeedItem],
-        },
+        // chat: {
+        //   ...prev.chat,
+        //   messages: [...prev.chat[roomID].messages, newFeedItem],
+        // },
+        ...prev,
+        newFeedItem,
       });
     },
   });
