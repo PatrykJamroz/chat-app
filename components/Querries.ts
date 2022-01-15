@@ -22,8 +22,14 @@ const GET_MESSAGES = gql`
 `;
 
 const POST_MESSAGE = gql`
-  mutation postMessage($user: String!, $roomID: String!, $body: String!) {
-    postMessage(user: $user, roomID: $roomID, body: $body)
+  mutation PostMessage($user: String!, $body: String!, $roomID: String!) {
+    postMessage(user: $user, body: $body, roomID: $roomID) {
+      user {
+        name
+        profilePic
+      }
+      body
+    }
   }
 `;
 

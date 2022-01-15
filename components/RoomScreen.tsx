@@ -51,12 +51,12 @@ export default function RoomScreen(props) {
           },
         }))}
         onSend={(e) => {
+          console.log("message send", e[0].text);
           postMessage({
             variables: {
               body: e[0].text,
               roomID: roomID,
               user: "User",
-              // password: login.password,
             },
           });
         }}
