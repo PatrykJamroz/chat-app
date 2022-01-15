@@ -1,17 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import "react-native-gesture-handler";
-import {
-  GET_MESSAGES,
-  MESSAGE_SUBSCRIPTION,
-  POST_MESSAGE,
-  // GET_ROOMS,
-} from "./Querries";
+import { GET_MESSAGES, MESSAGE_SUBSCRIPTION, POST_MESSAGE } from "./Querries";
 import { useQuery, useMutation } from "@apollo/client";
-// import PostMessage from "./PostMessage";
 import { GiftedChat } from "react-native-gifted-chat";
 import { styles } from "./styles";
-// import { login } from "../misc/crede";
 
 export default function RoomScreen(props) {
   const roomID = props.route.params.roomID;
@@ -29,14 +22,11 @@ export default function RoomScreen(props) {
     updateQuery: (prev, { subscriptionData }) => {
       if (!subscriptionData.data) return prev;
       const newFeedItem = subscriptionData.data.messageAdded;
-      console.log("newfeeditem", newFeedItem);
+      // console.log("newfeeditem", newFeedItem);
+      // console.log("data", data);
+      // console.log("prev", prev);
       return Object.assign({}, prev, {
-        // chat: {
-        //   ...prev.chat,
-        //   messages: [...prev.chat[roomID].messages, newFeedItem],
-        // },
-        ...prev,
-        newFeedItem,
+        messages: [...prev.messages, newFeedItem],
       });
     },
   });
@@ -45,7 +35,7 @@ export default function RoomScreen(props) {
     <View style={styles.container}>
       <GiftedChat
         messages={data.messages.map((msg) => ({
-          // _id: msg.id,
+          _id: new Date() + Math.random().toString(),
           text: msg.body,
           user: {
             _id: msg.user.name,

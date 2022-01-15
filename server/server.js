@@ -60,12 +60,6 @@ type SingleUserType {
 }
 `;
 
-const subscribers = [];
-const onRoomsUpdates = (fn) => subscribers.push(fn);
-
-// const channel = Math.random().toString(36).slice(2, 15);
-const channel = "channel";
-
 const resolvers = {
   Query: {
     rooms: () => chat,
@@ -81,7 +75,6 @@ const resolvers = {
         body: body,
       };
       chat[roomID].messages.push(newMessage);
-      // subscribers.forEach((fn) => fn());
       pubsub.publish("messageAdded", { messageAdded: newMessage });
       return newMessage;
     },
@@ -94,9 +87,7 @@ const resolvers = {
   },
   Subscription: {
     messageAdded: {
-      subscribe: (parent, args, { pubsub }) => {
-        // onRoomsUpdates(() => pubsub.publish(channel, "messageAdded"));
-        // setTimeout(() => pubsub.publish(channel, "messageAdded"), 0);
+      subscribe: () => {
         return pubsub.asyncIterator("messageAdded");
       },
     },
