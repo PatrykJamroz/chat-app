@@ -1,52 +1,35 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
-import * as AbsintheSocket from "@absinthe/socket";
-import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
-import { Socket as PhoenixSocket } from "phoenix";
-import { hasSubscription } from "@jumpn/utils-graphql";
-import { split } from "apollo-link";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { split, HttpLink } from "@apollo/client";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { WebSocketLink } from "@apollo/client/link/ws";
 
-import { token } from "../misc/crede";
-
-const httpLink = createHttpLink({
-  uri: "https://chat.thewidlarzgroup.com/api/graphiql",
+const httpLink = new HttpLink({
+  uri: "http://localhost:4000/",
 });
 
-const authLink = setContext((_, { headers }) => {
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
+const wsLink = new WebSocketLink({
+  uri: "ws://localhost:4000/",
+  options: {
+    reconnect: true,
+  },
 });
 
-const authedHttpLink = authLink.concat(httpLink);
-
-const phoenixSocket = new PhoenixSocket(
-  "wss://chat.thewidlarzgroup.com/socket",
-  {
-    params: () => {
-      return {
-        token: token,
-      };
-    },
-  }
-);
-
-const absintheSocket = AbsintheSocket.create(phoenixSocket);
-
-const websocketLink = createAbsintheSocketLink(absintheSocket);
-
-const link = split(
-  (operation) => hasSubscription(operation.query),
-  websocketLink,
-  authedHttpLink
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  wsLink,
+  httpLink
 );
 
 const cache = new InMemoryCache();
 
 export const client = new ApolloClient({
-  link,
+  link: splitLink,
+  // uri: "http://localhost:4000/",
   cache,
 });

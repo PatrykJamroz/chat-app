@@ -2,103 +2,45 @@ import { gql } from "@apollo/client";
 
 const GET_ROOMS = gql`
   query GetRooms {
-    usersRooms {
-      rooms {
-        id
-        name
-        roomPic
-      }
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
+    rooms {
+      id
+      name
     }
   }
 `;
 
 const GET_MESSAGES = gql`
   query GetMessages($roomID: String!) {
-    room(id: $roomID) {
-      id
-      messages {
-        body
-        id
-        insertedAt
-        user {
-          email
-          firstName
-          id
-          lastName
-          profilePic
-          role
-        }
-      }
-      name
-      roomPic
+    messages(roomID: $roomID) {
       user {
-        email
-        firstName
-        id
-        lastName
+        name
         profilePic
-        role
       }
+      body
     }
   }
 `;
 
 const POST_MESSAGE = gql`
-  mutation PostMessage(
-    $messageBody: String!
-    $roomID: String!
-    $email: String!
-    $password: String!
-  ) {
-    loginUser(email: $email, password: $password) {
-      token
+  mutation PostMessage($user: String!, $body: String!, $roomID: String!) {
+    postMessage(user: $user, body: $body, roomID: $roomID) {
       user {
-        email
-        firstName
-        id
-        lastName
+        name
         profilePic
-        role
       }
-    }
-    sendMessage(body: $messageBody, roomId: $roomID) {
       body
-      id
-      insertedAt
-      user {
-        email
-        firstName
-        id
-        lastName
-        profilePic
-        role
-      }
     }
   }
 `;
 
 const MESSAGE_SUBSCRIPTION = gql`
-  subscription messageAdded($roomID: String!) {
-    messageAdded(roomId: $roomID) {
-      body
-      id
-      insertedAt
+  subscription MessageAdded($roomID: String!) {
+    messageAdded(roomID: $roomID) {
       user {
-        email
-        firstName
-        id
-        lastName
+        name
         profilePic
-        role
       }
+      body
     }
   }
 `;
