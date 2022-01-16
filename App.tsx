@@ -18,7 +18,7 @@ export default function App() {
           <Stack.Screen
             name="Room"
             component={RoomScreen}
-            options={({ route }) => ({ title: route.params.roomName })}
+            options={({ route }) => ({ title: route.params?.roomName })}
           />
         </Stack.Navigator>
       </NavigationContainer>

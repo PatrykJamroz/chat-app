@@ -7,6 +7,7 @@ import { GiftedChat } from "react-native-gifted-chat";
 import { styles } from "./styles";
 
 export default function RoomScreen(props) {
+  console.log("props", props);
   const roomID = props.route.params.roomID;
   const [postMessage] = useMutation(POST_MESSAGE);
   const { data, loading, error, subscribeToMore } = useQuery(GET_MESSAGES, {
@@ -22,9 +23,6 @@ export default function RoomScreen(props) {
     updateQuery: (prev, { subscriptionData }) => {
       if (!subscriptionData.data) return prev;
       const newFeedItem = subscriptionData.data.messageAdded;
-      // console.log("newfeeditem", newFeedItem);
-      // console.log("data", data);
-      // console.log("prev", prev);
       return Object.assign({}, prev, {
         messages: [...prev.messages, newFeedItem],
       });
@@ -44,7 +42,6 @@ export default function RoomScreen(props) {
           },
         }))}
         onSend={(e) => {
-          console.log("message send", e[0].text);
           postMessage({
             variables: {
               body: e[0].text,
