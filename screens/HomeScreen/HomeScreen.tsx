@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View, Image, Button } from "react-native";
 import "react-native-gesture-handler";
-import { GET_ROOMS } from "./Querries";
+import { GET_ROOMS } from "../../gql/queries";
 import { useQuery } from "@apollo/client";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 

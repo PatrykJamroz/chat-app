@@ -1,10 +1,13 @@
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import "react-native-gesture-handler";
-import { GET_MESSAGES, MESSAGE_SUBSCRIPTION, POST_MESSAGE } from "./Querries";
+
+import { GET_MESSAGES } from "../../gql/queries";
+import { MESSAGE_SUBSCRIPTION } from "../../gql/subscriptions";
+import { POST_MESSAGE } from "../../gql/mutations";
 import { useQuery, useMutation } from "@apollo/client";
 import { GiftedChat } from "react-native-gifted-chat";
-import { styles } from "./styles";
+import { styles } from "./RoomScreen.styles";
 
 export default function RoomScreen(props) {
   console.log("props", props);

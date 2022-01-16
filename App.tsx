@@ -2,10 +2,10 @@ import React from "react";
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { client } from "./components/ApolloSetup";
+import { client } from "./Apollo/ApolloSetup";
 import { ApolloProvider } from "@apollo/client";
-import HomeScreen from "./components/HomeScreen";
-import RoomScreen from "./components/RoomScreen";
+import HomeScreen from "./screens/HomeScreen/HomeScreen";
+import RoomScreen from "./screens/RoomScreen/RoomScreen";
 
 const Stack = createStackNavigator();
 
