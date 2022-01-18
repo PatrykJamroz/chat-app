@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Text, View } from "react-native";
 import "react-native-gesture-handler";
-import { GET_MESSAGES, MESSAGE_SUBSCRIPTION, POST_MESSAGE } from "./Querries";
+
+import { GET_MESSAGES } from "../../gql/queries";
+import { MESSAGE_SUBSCRIPTION } from "../../gql/subscriptions";
+import { POST_MESSAGE } from "../../gql/mutations";
 import { useQuery, useMutation } from "@apollo/client";
 import { GiftedChat } from "react-native-gifted-chat";
-import { styles } from "./styles";
+import { styles } from "./RoomScreen.styles";
 
 export default function RoomScreen(props) {
-  console.log("props", props);
   const roomID = props.route.params.roomID;
   const [postMessage] = useMutation(POST_MESSAGE);
   const { data, loading, error, subscribeToMore } = useQuery(GET_MESSAGES, {
@@ -54,6 +56,7 @@ export default function RoomScreen(props) {
         inverted={false}
         showUserAvatar={false}
         renderUsernameOnMessage={true}
+        alwaysShowSend
       />
     </View>
   );
