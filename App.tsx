@@ -13,8 +13,8 @@ export default function App() {
   return (
     <ApolloProvider client={client}>
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="Home Screen / Room list" component={HomeScreen} />
+        <Stack.Navigator initialRouteName={"Home"}>
+          <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen
             name="Room"
             component={RoomScreen}
