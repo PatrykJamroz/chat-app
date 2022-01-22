@@ -5,6 +5,7 @@ import { GET_ROOMS } from "../../gql/queries";
 import { useQuery } from "@apollo/client";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import { RoomListItem } from "../../components/RoomListItem/RoomListItem";
+import { styles } from "./HomeScreen.styles";
 
 type Props = {
   navigation: NavigationProp<ParamListBase>;
@@ -17,7 +18,7 @@ export default function HomeScreen({ navigation }: Props) {
   if (error) return <Text>Error :(</Text>;
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       <FlatList
         keyExtractor={(item) => item.id}
         data={data.rooms}

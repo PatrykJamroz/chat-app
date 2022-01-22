@@ -1,5 +1,6 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import React from "react";
+import { styles } from "./RoomListItem.styles";
 
 export function RoomListItem(props) {
   const room = props.item;
@@ -11,8 +12,9 @@ export function RoomListItem(props) {
           roomName: room.name,
         });
       }}
+      style={styles.wrapper}
     >
-      <Text>
+      <Text style={styles.text}>
         {room.name} [id: {room.id}]
       </Text>
     </TouchableOpacity>

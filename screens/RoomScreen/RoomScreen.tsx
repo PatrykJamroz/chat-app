@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import "react-native-gesture-handler";
 
 import { GET_MESSAGES } from "../../gql/queries";
@@ -7,7 +7,6 @@ import { MESSAGE_SUBSCRIPTION } from "../../gql/subscriptions";
 import { POST_MESSAGE } from "../../gql/mutations";
 import { useQuery, useMutation } from "@apollo/client";
 import { GiftedChat } from "react-native-gifted-chat";
-import { styles } from "./RoomScreen.styles";
 
 export default function RoomScreen(props) {
   const roomID = props.route.params.roomID;
@@ -32,32 +31,30 @@ export default function RoomScreen(props) {
   });
 
   return (
-    <View style={styles.container}>
-      <GiftedChat
-        messages={data.messages.map((msg) => ({
-          _id: new Date() + Math.random().toString(),
-          text: msg.body,
-          user: {
-            _id: msg.user.name,
-            name: msg.user.name,
-            avatar: msg.user.profilePic,
+    <GiftedChat
+      messages={data.messages.map((msg) => ({
+        _id: new Date() + Math.random().toString(),
+        text: msg.body,
+        user: {
+          _id: msg.user.name,
+          name: msg.user.name,
+          avatar: msg.user.profilePic,
+        },
+      }))}
+      onSend={(e) => {
+        postMessage({
+          variables: {
+            body: e[0].text,
+            roomID: roomID,
+            user: "User",
           },
-        }))}
-        onSend={(e) => {
-          postMessage({
-            variables: {
-              body: e[0].text,
-              roomID: roomID,
-              user: "User",
-            },
-          });
-        }}
-        user={{ _id: "User" }}
-        inverted={false}
-        showUserAvatar={false}
-        renderUsernameOnMessage={true}
-        alwaysShowSend
-      />
-    </View>
+        });
+      }}
+      user={{ _id: "User" }}
+      inverted={false}
+      showUserAvatar={false}
+      renderUsernameOnMessage={true}
+      alwaysShowSend
+    />
   );
 }
